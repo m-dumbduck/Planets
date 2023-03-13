@@ -1,11 +1,30 @@
 #include <Windows.h>
+#include <string>
 #include "Graphics.h"
+
+Graphics* graphics;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == WM_DESTROY) {
+	if (uMsg == WM_DESTROY)
+	{
 		PostQuitMessage(0);
 		return 0;
+	}
+	if (uMsg == WM_PAINT)
+	{
+		graphics->BeginDraw();
+		graphics->ClearScreen(0.0f, 0.0f, 0.5f);
+
+
+		for (int i = 0; i < 1000; i++)
+		{
+			graphics->DrawCircle(rand() % 800, rand() % 600, rand() % 100,
+				(rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f);
+		}
+
+
+		graphics->EndDraw();
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
@@ -26,10 +45,17 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance, _
 	RECT rect = { 0, 0, 800, 600 };
 	AdjustWindowRectEx(&rect, WS_OVERLAPPEDWINDOW, false, WS_EX_OVERLAPPEDWINDOW);
 
-	HWND windowhandle = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, (LPWSTR)"MainWindow", (LPWSTR)"Planets", WS_OVERLAPPEDWINDOW,
+	HWND windowhandle = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, (wchar_t*)"MainWindow", (wchar_t*)"Planets", WS_OVERLAPPEDWINDOW,
 		100, 100, rect.right, rect.bottom - rect.top, NULL, NULL, hInstance, 0);
 	if (!windowhandle)
 		return -1;
+
+	graphics = new Graphics();
+
+	if (!graphics->Init(windowhandle)) {
+		delete graphics;
+		return -1;
+	}
 
 	ShowWindow(windowhandle, nCmdShow);
 
@@ -39,6 +65,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance, _
 		DispatchMessage(&message);
 
 	}
+
+	delete graphics;
 
 
 	return 0;
